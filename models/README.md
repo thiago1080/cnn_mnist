@@ -1,0 +1,2 @@
+- This folder stores the trained models.
+- Each trained model is stored in its own directory

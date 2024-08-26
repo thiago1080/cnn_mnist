@@ -1,28 +1,28 @@
 import tensorflow as tf
 from tensorflow.keras import datasets
 import numpy as np
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-(x_train, y_train), (x_test, y_test) = datasets.mnist.load_data()
-x_train = x_train.reshape((x_train.shape[0], 28, 28, 1)).astype('float32') / 255
-x_test = x_test.reshape((x_test.shape[0], 28, 28, 1)).astype('float32') / 255
-y_train = tf.one_hot(y_train, 10)
-y_test = tf.one_hot(y_test, 10)
 
-# Definir o modelo
-class ConvNet(tf.Module):
+
+# Definir o modelo com regularização L1
+class ConvNetL1(tf.Module):
     def __init__(self):
-        self.conv1 = tf.Variable(tf.random.normal([3, 3, 1, 32]), name='conv1')
-        self.conv2_1 = tf.Variable(tf.random.normal([3, 3, 32, 32]), name='conv2_1')
-        self.conv2_2 = tf.Variable(tf.random.normal([3, 3, 32, 32]), name='conv2_2')
-        self.conv3_1 = tf.Variable(tf.random.normal([3, 3, 32, 256]), name='conv3_1')
-        self.conv3_2 = tf.Variable(tf.random.normal([3, 3, 32, 256]), name='conv3_2')
-        self.fc1 = tf.Variable(tf.random.normal([7 * 7 * 512, 1000]), name='fc1')
-        self.fc2 = tf.Variable(tf.random.normal([1000, 500]), name='fc2')
-        self.fc3 = tf.Variable(tf.random.normal([500, 10]), name='fc3')
+        l1_regularizer = tf.keras.regularizers.l1(0.01)
+        self.conv1 = tf.Variable(tf.random.normal([3, 3, 1, 32]), name='conv1', regularizer=l1_regularizer)
+        self.conv2_1 = tf.Variable(tf.random.normal([3, 3, 32, 32]), name='conv2_1', regularizer=l1_regularizer)
+        self.conv2_2 = tf.Variable(tf.random.normal([3, 3, 32, 32]), name='conv2_2', regularizer=l1_regularizer)
+        self.conv3_1 = tf.Variable(tf.random.normal([3, 3, 32, 256]), name='conv3_1', regularizer=l1_regularizer)
+        self.conv3_2 = tf.Variable(tf.random.normal([3, 3, 32, 256]), name='conv3_2', regularizer=l1_regularizer)
+        self.fc1 = tf.Variable(tf.random.normal([7 * 7 * 512, 1000]), name='fc1', regularizer=l1_regularizer)
+        self.fc2 = tf.Variable(tf.random.normal([1000, 500]), name='fc2', regularizer=l1_regularizer)
+        self.fc3 = tf.Variable(tf.random.normal([500, 10]), name='fc3', regularizer=l1_regularizer)
         self.bias1 = tf.Variable(tf.zeros([1000]), name='bias1')
         self.bias2 = tf.Variable(tf.zeros([500]), name='bias2')
         self.bias3 = tf.Variable(tf.zeros([10]), name='bias3')
-
+    @tf.function
     def __call__(self, x):
         x = tf.nn.conv2d(x, self.conv1, strides=[1, 1, 1, 1], padding='SAME')
         x = tf.nn.relu(x)
@@ -62,6 +62,8 @@ def train_step(model, images, labels):
     with tf.GradientTape() as tape:
         logits = model(images)
         loss = loss_fn(labels, logits)
+        # Adicionar a perda de regularização
+        loss += sum(model.losses)
     gradients = tape.gradient(loss, model.trainable_variables)
     optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     return loss
@@ -85,7 +87,28 @@ def evaluate(model, images, labels):
 test_accuracy = evaluate(model, x_test, y_test)
 print(f'Test accuracy: {test_accuracy.numpy()}')
 
-
 module_with_signature_path ='model'
 call = model.__call__.get_concrete_function(tf.TensorSpec(None, tf.float32))
 tf.saved_model.save(model, module_with_signature_path, signatures=call)
+
+logits = model(x_test)
+predictions = tf.argmax(logits, axis=1).numpy()
+true_labels = tf.argmax(y_test, axis=1).numpy()
+conf_matrix = confusion_matrix(true_labels, predictions)
+
+accuracy = accuracy_score(true_labels, predictions)
+precision = precision_score(true_labels, predictions, average='weighted')
+recall = recall_score(true_labels, predictions, average='weighted')
+f1 = f1_score(true_labels, predictions, average='weighted')
+
+print(f'Accuracy: {accuracy}')
+print(f'Precision: {precision}')
+print(f'Recall: {recall}')
+print(f'F1 Score: {f1}')
+
+plt.figure(figsize=(10, 8))
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues')
+plt.xlabel('Predicted Label')
+plt.ylabel('True Label')
+plt.title('Confusion Matrix')
+plt.show()
