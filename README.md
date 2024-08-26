@@ -1,169 +1,164 @@
-# MNIST Image Prediction Service
+# CNN MNIST Project
 
-This FastAPI application provides endpoints to predict the class of MNIST images using a pre-trained TensorFlow model.
+This project implements a Convolutional Neural Network (CNN) to classify handwritten digits using the MNIST dataset. 
+The project includes various improvements such as dropout and L1 and L2 regularization.
 
-## Requirements
+## Project Structure:
 
-- Python 3.7+
-- FastAPI
-- TensorFlow
-- NumPy
-- Pillow
-- Uvicorn
+```
+cnn_mnist/
+    asdf.py
+    base_model.py
+    improvements/
+        __init__.py
+        model_with_dropout.py
+        model_with_l1_regularization.py
+        model_with_l2_regularization.py
+    main.py
+    model/
+        fingerprint.pb
+        saved_model.pb
+        variables/
+            variables.data-00000-of-00001
+            variables.index
+    model_functions.py
+    models/
+        base_model/
+            fingerprint.pb
+            ...
+        README.md
+    README.md
+    requirements.txt
+    train_dropout.py
+    train_l1_regularization.py
+    train_l2_regularization.py
+    train.py
+```
 
-## Installation
+## Installation:
 
 1. Clone the repository:
     ```bash
-    git clone <repository-url>
-    cd <repository-directory>
+    git clone <REPOSITORY_URL>
+    cd cnn_mnist
     ```
 
-2. Install the required packages:
+2. Install the dependencies:
     ```bash
-    pip install fastapi tensorflow numpy pillow uvicorn
+    pip install -r requirements.txt
     ```
 
-3. Ensure you have the pre-trained TensorFlow model saved in the `model` directory.
+## Usage:
 
-## Running the Application
+### Training:
 
-Start the FastAPI application using Uvicorn:
-```bash
-uvicorn main:app --host 0.0.0.0 --port 8000
-```
-
-## Endpoints
-
-### Root Endpoint
-
-- **URL:** `/`
-- **Method:** `GET`
-- **Description:** Returns a welcome message.
-
-#### Example Request
-```bash
-curl -X GET "http://localhost:8000/"
-```
-
-#### Example Response
-```json
-{
-  "message": "Welcome! This service will predict an image based on the MNIST dataset"
-}
-```
-
-### Predict Image Endpoint
-
-- **URL:** `/predict`
-- **Method:** `POST`
-- **Description:** Predicts the class of an MNIST image.
-
-#### Example Request
-```bash
-curl -X POST "http://localhost:8000/predict" -F "file=@path_to_your_image.png"
-```
-
-#### Example Response
-```json
-{
-  "predicted_class": "7"
-}
-```
-
-### Batch Predict Endpoint
-
-- **URL:** `/batch_predict`
-- **Method:** `POST`
-- **Description:** Predicts the class of all MNIST images in a directory.
-
-#### Example Request
-```bash
-curl -X POST "http://localhost:8000/batch_predict" -F "directory=/path_to_your_directory"
-```
-
-#### Example Response
-```json
-{
-  "image1.png": "3",
-  "image2.jpg": "5",
-  "image3.jpeg": "1"
-}
-```
-
-## Notes
-
-- Ensure the images are in grayscale and resized to 28x28 pixels.
-- The model should be compatible with the MNIST dataset.
-- The model should be saved in the `model` directory.
-
-
-
-
-
-
-# MNIST Convolutional Neural Network
-
-This script trains a convolutional neural network (CNN) on the MNIST dataset using TensorFlow.
-
-## Requirements
-
-- Python 3.7+
-- TensorFlow
-- NumPy
-
-## Installation
-
-1. Clone the repository:
+To train the base model:
     ```bash
-    git clone <repository-url>
-    cd <repository-directory>
+    python train.py
     ```
 
-2. Install the required packages:
+To train the model with dropout:
     ```bash
-    pip install tensorflow numpy
+    python train_dropout.py
     ```
 
-## Running the Script
+To train the model with L1 regularization:
+    ```bash
+    python train_l1_regularization.py
+    ```
 
-1. Ensure you have the MNIST dataset available. The script will automatically download it if not present.
+To train the model with L2 regularization:
+    ```bash
+    python train_l2_regularization.py
+    ```
 
-2. Run the script:
+### Evaluation:
+
+The trained models are saved in the `models/` directory. You can load and evaluate the models using the appropriate scripts.
+
+### Prediction:
+
+To make predictions using the FastAPI API, run the server:
     ```bash
     python main.py
     ```
 
-## Script Overview
+Access [http://localhost:8000](http://localhost:8000) to use the API.
 
-### Data Preparation
+## Improvements:
 
-The script loads the MNIST dataset and preprocesses it by normalizing the pixel values and one-hot encoding the labels.
+- `model_with_dropout.py`: Model with dropout.
+- `model_with_l1_regularization.py`: Model with L1 regularization.
+- `model_with_l2_regularization.py`: Model with L2 regularization.
 
-### Model Definition
+## Results:
 
-A custom convolutional neural network (CNN) is defined using TensorFlow's low-level API. The model consists of multiple convolutional layers followed by fully connected layers.
+The results of the trained models are saved in the `models/` directory.
 
-### Training
 
-The model is trained for a specified number of epochs using the Adam optimizer and categorical cross-entropy loss function.
+### Base model 
 
-### Evaluation
+#### Metrics
 
-After training, the model's accuracy is evaluated on the test dataset.
-
-### Saving the Model
-
-The trained model is saved in TensorFlow's SavedModel format for later use.
-
-## Example Output
-
-During training, the script will print the loss for each epoch. After training, it will print the test accuracy.
-
-```bash
-Epoch 1, Loss: 0.1234
-Epoch 2, Loss: 0.0987
-...
-Test accuracy: 0.9876
+```
+Accuracy: 0.965
+Precision: 0.9685941533933192
+Recall: 0.965
+F1 Score: 0.9653356784311873
 ```
 
+#### Confusion Matrix
+
+![Confusion Matrix](./results/Base_model.png)
+
+## Improvements
+
+We propose three improvements to the model:
+    - Dropout regularization
+    - L1 regularization
+    - L2 regularization
+
+The results are below:
+
+### L1 regularization 
+
+```
+Accuracy: 0.9737
+Precision: 0.9743373214022366
+Recall: 0.9737
+F1 Score: 0.9735207524792991
+```
+
+#### Confusion Matrix
+![Confusion Matrix](./results/L1.png)
+
+
+
+### L1 regularization 
+```
+Accuracy: 0.9803
+Precision: 0.9804292632640894
+Recall: 0.9803
+F1 Score: 0.9802803264700615
+```
+
+#### Confusion Matrix
+![Confusion Matrix](./results/L2.png)
+
+### Dropout
+
+
+```
+Accuracy: 0.9801
+Precision: 0.9803238665051038
+Recall: 0.9801
+F1 Score: 0.9800765254359105
+```
+
+#### Confusion Matrix
+![Confusion Matrix](./results/Dropout.png)
+
+
+## Conclusion
+
+All improvements slightly increased the model's performance. The best model was the one with L2 regularization, which achieved an accuracy of 98.03%.

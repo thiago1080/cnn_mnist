@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from improvements import ConvNetDropout
 from model_functions import get_mnist_data, train_step
 
-MODEL_PATH = 'models/model_with_l2'
+MODULE_WITH_SIGNATURE_PATH =  'models/model_with_dropout'
 model = ConvNetDropout()
 
 x_train, y_train, x_test, y_test = get_mnist_data()
@@ -27,9 +27,8 @@ for epoch in range(epochs):
 
 
 
-module_with_signature_path ='model'
 call = model.__call__.get_concrete_function(tf.TensorSpec(None, tf.float32))
-tf.saved_model.save(model, module_with_signature_path, signatures=call)
+tf.saved_model.save(model, MODULE_WITH_SIGNATURE_PATH, signatures=call)
 
 
 logits = model(x_test)

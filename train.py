@@ -27,8 +27,6 @@ for epoch in range(epochs):
 
 
 
-test_accuracy = evaluate(model, x_test, y_test)
-print(f'Test accuracy: {test_accuracy.numpy()}')
 
 
 module_with_signature_path ='model'

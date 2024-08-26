@@ -28,9 +28,9 @@ for epoch in range(epochs):
 
 
 module_with_signature_path ='model'
-call = model.__call__.get_concrete_function(tf.TensorSpec(None, tf.float32))
-tf.saved_model.save(model, module_with_signature_path, signatures=call)
 
+call = model.__call__.get_concrete_function(tf.TensorSpec(None, tf.float32))
+tf.saved_model.save(model, MODULE_WITH_SIGNATURE_PATH, signatures=call)
 
 logits = model(x_test)
 predictions = tf.argmax(logits, axis=1).numpy()

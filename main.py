@@ -8,7 +8,8 @@ import uvicorn
 
 app = FastAPI()
 
-model = tf.saved_model.load('model')
+# Alter the below path to the path of the saved model
+model = tf.saved_model.load('models/base_model')
 
 def predict(model, image_array):
     logits = model(image_array)
