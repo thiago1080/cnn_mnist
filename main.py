@@ -1,5 +1,6 @@
 from typing import List
-from fastapi import FastAPI, File, UploadFile
+import os
+from fastapi import FastAPI, File, UploadFile, Form
 import tensorflow as tf
 import numpy as np
 from PIL import Image
@@ -7,7 +8,7 @@ import uvicorn
 
 app = FastAPI()
 
-model = tf.saved_model.load('module_with_signature')
+model = tf.saved_model.load('model')
 
 def predict(model, image_array):
     logits = model(image_array)
@@ -28,6 +29,22 @@ async def predict_image(file: UploadFile = File(...)):
     image_array = np.array(image).reshape((1, 28, 28, 1)).astype('float32') / 255
     prediction = predict(model, image_array)
     return {"predicted_class": str(prediction)}
+
+@app.post("/batch_predict")
+async def batch_predict(directory: str = Form(...)):
+    """
+    Predicts the class of all MNIST images in a directory.
+    """
+    predictions = {}
+    for filename in os.listdir(directory):
+        if filename.endswith(".png") or filename.endswith(".jpg") or filename.endswith(".jpeg"):
+            image_path = os.path.join(directory, filename)
+            image = Image.open(image_path).convert('L')
+            image = image.resize((28, 28))
+            image_array = np.array(image).reshape((1, 28, 28, 1)).astype('float32') / 255
+            prediction = predict(model, image_array)
+            predictions[filename] = str(prediction)
+    return predictions
 
 
 if __name__ == "__main__":
